@@ -95,7 +95,13 @@ final class Wikigraph(client: Wikipedia):
         visited: Set[ArticleId],
         q: Queue[(Int, ArticleId)]
     ): WikiResult[Option[Int]] =
-      ???
+      if q.isEmpty then WikiResult.successful(Some(0))
+      else 
+        val qPop = q.head
+        for 
+          setArticlesIds <-
+            client.linksFrom()
+      yield ???
     end iter
     if start == target then
       // The start node is the one we are looking for: the search succeeds with
