@@ -177,13 +177,10 @@ object WikiResult:
   def traverse[A, B](as: Seq[A])(f: A => WikiResult[B])(using
       ExecutionContext
   ): WikiResult[Seq[B]] =
-    val test = 
-      as.foldLeft[WikiResult[B]](WikiResult.systemFailure(WikiException.Timeout)){
-        (x: WikiResult[B],y: A) => 
-          val transform: WikiResult[B] = f(y)
-          val zipped = x.zip(transform) 
-          zipped.map((x,y) => ???)
-      }
-    ???
+    as.foldLeft[WikiResult[Seq[B]]](WikiResult.successful(Nil)) {
+      (x: WikiResult[Seq[B]], y: A) =>
+        // f(y).zip(x).map((x, y) => x +: y)
+        x.zip(f(y)).map((x, y) => y +: x)
+    }
 
 end WikiResult
