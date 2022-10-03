@@ -179,8 +179,7 @@ object WikiResult:
   ): WikiResult[Seq[B]] =
     as.foldLeft[WikiResult[Seq[B]]](WikiResult.successful(Nil)) {
       (x: WikiResult[Seq[B]], y: A) =>
-        // f(y).zip(x).map((x, y) => x +: y)
-        x.zip(f(y)).map((x, y) => y +: x)
+        x.zip(f(y)).map((x, y) => x :+ y)
     }
 
 end WikiResult
