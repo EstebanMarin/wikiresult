@@ -60,10 +60,12 @@ case class WikiResult[A](value: Future[Either[Seq[WikiError], A]]):
     * Hint: Both Either and Future have a similar method
     */
   def map[B](f: A => B)(using ExecutionContext): WikiResult[B] =
-    val a = ???
-    val test =
-      (for value <- value
-      yield value)
+    val a: Future[Either[Seq[WikiError], B]] =
+      (for v <- value
+      yield v match
+        case Left(x)  => Left(x)
+        case Right(a) => Right(f(a))
+      )
     WikiResult(a)
 
   /** Use the result of this computation as an input for another asynchronous
@@ -77,7 +79,12 @@ case class WikiResult[A](value: Future[Either[Seq[WikiError], A]]):
     */
   def flatMap[B](f: A => WikiResult[B])(using ExecutionContext): WikiResult[B] =
     val futureB: Future[Either[Seq[WikiError], B]] = value.flatMap {
-      ???
+      case Left(e) => Future(Left(e))
+      case Right(a) =>
+        f(a).value.flatMap {
+          case Left(e)  => Future(Left(e))
+          case Right(b) => Future(Right(b))
+        }
     }
     WikiResult(futureB)
 
@@ -96,7 +103,12 @@ case class WikiResult[A](value: Future[Either[Seq[WikiError], A]]):
         a: Either[Seq[WikiError], A],
         b: Either[Seq[WikiError], B]
     ): Either[Seq[WikiError], (A, B)] =
-      ???
+      (a, b) match
+        case (Left(x), Left(y))   => Left(x ++ y)
+        case (Left(x), _)         => Left(x)
+        case (_, Left(y))         => Left(y)
+        case (Right(x), Right(y)) => Right(x, y)
+
     WikiResult(this.value.flatMap { thisEither =>
       that.value.map { thatEither =>
         zipEithersAcc(thisEither, thatEither)
@@ -165,6 +177,13 @@ object WikiResult:
   def traverse[A, B](as: Seq[A])(f: A => WikiResult[B])(using
       ExecutionContext
   ): WikiResult[Seq[B]] =
+    val test = 
+      as.foldLeft[WikiResult[B]](WikiResult.systemFailure(WikiException.Timeout)){
+        (x: WikiResult[B],y: A) => 
+          val transform: WikiResult[B] = f(y)
+          val zipped = x.zip(transform) 
+          zipped.map((x,y) => ???)
+      }
     ???
 
 end WikiResult
