@@ -97,7 +97,7 @@ final class Wikigraph(client: Wikipedia):
 
     def updateQueue(
         current: (Int, ArticleId),
-        qT: Queue[(Int, ArticleId)],
+        q: Queue[(Int, ArticleId)],
         neighbours: Set[ArticleId],
         visited: Set[ArticleId]
     ): Queue[(Int, ArticleId)] =
@@ -111,10 +111,11 @@ final class Wikigraph(client: Wikipedia):
         else
           val (nodeDistance, _) = current
           recursiveUpdate(
-            (nodeDistance + 1 -> neighbours.head) +: qT,
+            qT :+ (nodeDistance + 1 -> neighbours.head),
             neighbours - neighbours.head
           )
-      recursiveUpdate(qT, neighbours)
+      recursiveUpdate(q, neighbours)
+
 
     def iter(
         visited: Set[ArticleId],
@@ -126,9 +127,10 @@ final class Wikigraph(client: Wikipedia):
         val (nodeDistance, articleID) = current
         for
           neighboursToQueue: Set[ArticleId] <-
-            client.linksFrom(articleID)
+            client.linksFrom(articleID).fallbackTo(WikiResult.successful(Set.empty))
           answer: Option[Int] <-
-            if neighboursToQueue.contains(articleID) then
+            //ACA se rompe
+            if neighboursToQueue.contains(target) then
               WikiResult.successful(Some(nodeDistance))
             else if nodeDistance >= maxDepth then WikiResult.successful(None)
             else
