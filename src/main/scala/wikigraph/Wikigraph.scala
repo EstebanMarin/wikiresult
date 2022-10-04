@@ -95,26 +95,31 @@ final class Wikigraph(client: Wikipedia):
       * documentation of [[wikigraph.WikiResult#fallbackTo]].
       */
 
+    def updateQueue(
+        current: (Int, ArticleId),
+        qT: Queue[(Int, ArticleId)],
+        neighbours: Set[ArticleId],
+        visited: Set[ArticleId]
+    ): Queue[(Int, ArticleId)] =
+      def recursiveUpdate(
+          qT: Queue[(Int, ArticleId)],
+          neighbours: Set[ArticleId]
+      ): Queue[(Int, ArticleId)] =
+        if neighbours.isEmpty then qT
+        else if visited.contains(neighbours.head) then
+          recursiveUpdate(qT, neighbours - neighbours.head)
+        else
+          val (nodeDistance, _) = current
+          recursiveUpdate(
+            (nodeDistance + 1 -> neighbours.head) +: qT,
+            neighbours - neighbours.head
+          )
+      recursiveUpdate(qT, neighbours)
+
     def iter(
         visited: Set[ArticleId],
         q: Queue[(Int, ArticleId)]
     ): WikiResult[Option[Int]] =
-      def updateQueue(
-          current: (Int, ArticleId),
-          qT: Queue[(Int, ArticleId)],
-          neighbours: Set[ArticleId],
-          visted: Set[ArticleId]
-      ): Queue[(Int, ArticleId)] =
-        def recursiveUpdate(
-            qT: Queue[(Int, ArticleId)],
-            neighbours: Set[ArticleId]
-        ): Queue[(Int, ArticleId)] =
-          if qT.isEmpty then qT
-          else if ??? then ???
-          else ???
-        recursiveUpdate(qT, neighbours)
-
-      // if q.isEmpty || nodeDistance >= maxDepth then
       if q.isEmpty then WikiResult.successful(None)
       else
         val (current, queue) = q.dequeue
@@ -122,9 +127,9 @@ final class Wikigraph(client: Wikipedia):
         for
           neighboursToQueue: Set[ArticleId] <-
             client.linksFrom(articleID)
-          answer <-
+          answer: Option[Int] <-
             if neighboursToQueue.contains(articleID) then
-              WikiResult.successful(Some(nodeDistance + 1))
+              WikiResult.successful(Some(nodeDistance))
             else if nodeDistance >= maxDepth then WikiResult.successful(None)
             else
               iter(

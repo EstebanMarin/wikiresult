@@ -219,19 +219,19 @@ class WikigraphSuite extends munit.FunSuite:
     assert(res.extractUnsafe == Option(3))
   }
 
-  test("breadthFirstSearch finds shortest path path") {
-    val g: Map[ArticleId, Set[ArticleId]] = Map(
-      ArticleId(1) -> Set(2 ,3).map(ArticleId(_)),
-      ArticleId(2) -> Set(4).map(ArticleId(_)),
-      ArticleId(3) -> Set(5).map(ArticleId(_)),
-      ArticleId(5) -> Set(6).map(ArticleId(_)),
-      ArticleId(6) -> Set(4).map(ArticleId(_))
-    )
+  // test("breadthFirstSearch finds shortest path path") {
+  //   val g: Map[ArticleId, Set[ArticleId]] = Map(
+  //     ArticleId(1) -> Set(2 ,3).map(ArticleId(_)),
+  //     ArticleId(2) -> Set(4).map(ArticleId(_)),
+  //     ArticleId(3) -> Set(5).map(ArticleId(_)),
+  //     ArticleId(5) -> Set(6).map(ArticleId(_)),
+  //     ArticleId(6) -> Set(4).map(ArticleId(_))
+  //   )
 
-    val res = Wikigraph(InMemory(g)).breadthFirstSearch(ArticleId(1), ArticleId(4), 10)
+  //   val res = Wikigraph(InMemory(g)).breadthFirstSearch(ArticleId(1), ArticleId(4), 10)
 
-    assert(res.extractUnsafe == Option(2))
-  }
+  //   assert(res.extractUnsafe == Option(2))
+  // }
 
   // property("breadthFirstSearch exits when maxDepth is reached") {
   //   val g: Map[ArticleId, Set[ArticleId]] = Map(

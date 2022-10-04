@@ -45,4 +45,4 @@ def sameErrorMessage(op1: Option[Throwable], op2: Option[Throwable]): Boolean =
     case (None, None) => true
     case _ => false
   
-private val timeout: Duration =  Duration(10, "s")
+private val timeout: Duration =  Duration(10000, "s")
