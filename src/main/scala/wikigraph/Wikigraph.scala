@@ -5,6 +5,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import Articles.ArticleId
 import wikigraph.errors.WikiError
+import scala.util.Success.apply
+import scala.util.Success
 
 /** Analyze the graph of Wikipedia Articles
   *
@@ -92,32 +94,51 @@ final class Wikigraph(client: Wikipedia):
       * articles of the queue without including the failed node. Refer to the
       * documentation of [[wikigraph.WikiResult#fallbackTo]].
       */
+
     def iter(
         visited: Set[ArticleId],
         q: Queue[(Int, ArticleId)]
     ): WikiResult[Option[Int]] =
+      def updateQueue(
+          qT: Queue[(Int, ArticleId)],
+          neighbours: Set[ArticleId]
+      ): Queue[(Int, ArticleId)] = ???
       // if q.isEmpty || nodeDistance >= maxDepth then
-      if q.isEmpty then WikiResult.domainError(WikiError.NoResult(""))
+      if q.isEmpty then WikiResult.successful(None)
       else
-        val (node, queue) = q.dequeue
-        val (nodeDistance, articleID) = node
-        for
-          neighNodesToQueue: Set[ArticleId] <-
-            client.linksFrom(articleID)
-          updatedVisted: Set[ArticleId] = visited + articleID
-          updatedQueue: Queue[(Int, ArticleId)] =
-            queue.enqueue(
-              neighNodesToQueue
-                .map(id =>
-                  // agregating nodes that are not marcked
-                  if updatedVisted.contains(id) then
-                    (Int.MinValue, ArticleId(Int.MinValue))
-                  else (nodeDistance + 1, id)
-                )
-                .filter(_._1 > 0)
-            )
-          iteration <- iter(updatedVisted, updatedQueue)
-        yield iteration
+        val (current, queue) = q.dequeue
+        val (nodeDistance, articleID) = current
+        val test =
+          for
+            neighboursToQueue: Set[ArticleId] <-
+              client.linksFrom(articleID)
+            test <-
+              if neighboursToQueue.contains(articleID) then
+                ???
+              else iter(visited ++ neighboursToQueue, updateQueue(queue, neighboursToQueue))
+          yield test
+        test
+
+      // else
+      //   val (current, queue) = q.dequeue
+      //   val (nodeDistance, articleID) = current
+      //   for
+      //     neighboursToQueue: Set[ArticleId] <-
+      //       client.linksFrom(articleID)
+      //     updatedVisted: Set[ArticleId] = visited + articleID
+      //     updatedQueue: Queue[(Int, ArticleId)] =
+      //       queue.enqueue(
+      //         neighboursToQueue
+      //           .map(id =>
+      //             // agregating nodes that are not visited
+      //             if updatedVisted.contains(id) then
+      //               (Int.MinValue, ArticleId(Int.MinValue))
+      //             else (nodeDistance + 1, id)
+      //           )
+      //           .filter(_._1 > 0)
+      //       )
+      //     iteration <- iter(updatedVisted, updatedQueue)
+      //   yield iteration
     end iter
     if start == target then
       // The start node is the one we are looking for: the search succeeds with

@@ -233,47 +233,47 @@ class WikigraphSuite extends munit.FunSuite:
     assert(res.extractUnsafe == Option(2))
   }
 
-  property("breadthFirstSearch exits when maxDepth is reached") {
-    val g: Map[ArticleId, Set[ArticleId]] = Map(
-      ArticleId(1) -> Set(2).map(ArticleId(_)),
-      ArticleId(2) -> Set(3).map(ArticleId(_)),
-      ArticleId(3) -> Set(4).map(ArticleId(_)),
-      ArticleId(4) -> Set(5).map(ArticleId(_)),
-    )
-    val res = Wikigraph(InMemory(g)).breadthFirstSearch(ArticleId(1), ArticleId(5), 2)
+  // property("breadthFirstSearch exits when maxDepth is reached") {
+  //   val g: Map[ArticleId, Set[ArticleId]] = Map(
+  //     ArticleId(1) -> Set(2).map(ArticleId(_)),
+  //     ArticleId(2) -> Set(3).map(ArticleId(_)),
+  //     ArticleId(3) -> Set(4).map(ArticleId(_)),
+  //     ArticleId(4) -> Set(5).map(ArticleId(_)),
+  //   )
+  //   val res = Wikigraph(InMemory(g)).breadthFirstSearch(ArticleId(1), ArticleId(5), 2)
 
-    blockAndCompare(WikiResult.successful[Option[Int]](None), res)
-  }
+  //   blockAndCompare(WikiResult.successful[Option[Int]](None), res)
+  // }
 
-  property("breadthFirstSearch does not fail on errors") {
-    val g = Map(ArticleId(0) -> Set.empty[ArticleId])
-    val res = Wikigraph(InMemory(g)).breadthFirstSearch(ArticleId(1), ArticleId(1000), 4)
-    blockAndCompare(WikiResult.successful[Option[Int]](None), res)
-  }
+  // property("breadthFirstSearch does not fail on errors") {
+  //   val g = Map(ArticleId(0) -> Set.empty[ArticleId])
+  //   val res = Wikigraph(InMemory(g)).breadthFirstSearch(ArticleId(1), ArticleId(1000), 4)
+  //   blockAndCompare(WikiResult.successful[Option[Int]](None), res)
+  // }
 
-  property("breadthFirstSearch does not get stuck in cycles") {
-    val g = Map(
-      ArticleId(0) -> Set(ArticleId(1)),
-      ArticleId(1) -> Set(ArticleId(0)),
-      ArticleId(2) -> Set.empty
-    )
-    val res = Wikigraph(InMemory(g)).breadthFirstSearch(ArticleId(0), ArticleId(2), Int.MaxValue)
-    val exp = WikiResult.successful[Option[Int]](None)
-    blockAndCompare(exp, res)
-  }
+  // property("breadthFirstSearch does not get stuck in cycles") {
+  //   val g = Map(
+  //     ArticleId(0) -> Set(ArticleId(1)),
+  //     ArticleId(1) -> Set(ArticleId(0)),
+  //     ArticleId(2) -> Set.empty
+  //   )
+  //   val res = Wikigraph(InMemory(g)).breadthFirstSearch(ArticleId(0), ArticleId(2), Int.MaxValue)
+  //   val exp = WikiResult.successful[Option[Int]](None)
+  //   blockAndCompare(exp, res)
+  // }
 
-  property("distanceMatrix") {
-    val g = Map(
-      ArticleId(1) -> Set(2).map(ArticleId(_)),
-      ArticleId(2) -> Set(3).map(ArticleId(_)),
-      ArticleId(3) -> Set(1).map(ArticleId(_))
-    )
+  // property("distanceMatrix") {
+  //   val g = Map(
+  //     ArticleId(1) -> Set(2).map(ArticleId(_)),
+  //     ArticleId(2) -> Set(3).map(ArticleId(_)),
+  //     ArticleId(3) -> Set(1).map(ArticleId(_))
+  //   )
 
-    val res = Wikigraph(InMemory(g)).distanceMatrix(List("TestArticle-1", "TestArticle-3")) 
-    val exp = WikiResult.successful[Seq[(String, String, Option[Int])]](Seq(("TestArticle-1", "TestArticle-3", Option(2)), ("TestArticle-3", "TestArticle-1", Option(1))))
+  //   val res = Wikigraph(InMemory(g)).distanceMatrix(List("TestArticle-1", "TestArticle-3")) 
+  //   val exp = WikiResult.successful[Seq[(String, String, Option[Int])]](Seq(("TestArticle-1", "TestArticle-3", Option(2)), ("TestArticle-3", "TestArticle-1", Option(1))))
 
-    blockAndCompare(exp, res)
-  }
+  //   blockAndCompare(exp, res)
+  // }
 
   property("namedLinks") {
     val links = Set(2 ,3, 4, 5).map(ArticleId(_))
