@@ -4,6 +4,7 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import Articles.ArticleId
+import wikigraph.errors.WikiError
 
 /** Analyze the graph of Wikipedia Articles
   *
@@ -95,13 +96,28 @@ final class Wikigraph(client: Wikipedia):
         visited: Set[ArticleId],
         q: Queue[(Int, ArticleId)]
     ): WikiResult[Option[Int]] =
-      if q.isEmpty then WikiResult.successful(Some(0))
-      else 
-        val qPop = q.head
-        for 
-          setArticlesIds <-
-            client.linksFrom()
-      yield ???
+      // if q.isEmpty || nodeDistance >= maxDepth then
+      if q.isEmpty then WikiResult.domainError(WikiError.NoResult(""))
+      else
+        val (node, queue) = q.dequeue
+        val (nodeDistance, articleID) = node
+        for
+          neighNodesToQueue: Set[ArticleId] <-
+            client.linksFrom(articleID)
+          updatedVisted: Set[ArticleId] = visited + articleID
+          updatedQueue: Queue[(Int, ArticleId)] =
+            queue.enqueue(
+              neighNodesToQueue
+                .map(id =>
+                  // agregating nodes that are not marcked
+                  if updatedVisted.contains(id) then
+                    (Int.MinValue, ArticleId(Int.MinValue))
+                  else (nodeDistance + 1, id)
+                )
+                .filter(_._1 > 0)
+            )
+          iteration <- iter(updatedVisted, updatedQueue)
+        yield iteration
     end iter
     if start == target then
       // The start node is the one we are looking for: the search succeeds with
