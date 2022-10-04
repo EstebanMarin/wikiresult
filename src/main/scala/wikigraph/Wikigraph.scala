@@ -116,7 +116,6 @@ final class Wikigraph(client: Wikipedia):
           )
       recursiveUpdate(q, neighbours)
 
-
     def iter(
         visited: Set[ArticleId],
         q: Queue[(Int, ArticleId)]
@@ -127,9 +126,10 @@ final class Wikigraph(client: Wikipedia):
         val (nodeDistance, articleID) = current
         for
           neighboursToQueue: Set[ArticleId] <-
-            client.linksFrom(articleID).fallbackTo(WikiResult.successful(Set.empty))
+            client
+              .linksFrom(articleID)
+              .fallbackTo(WikiResult.successful(Set.empty))
           answer: Option[Int] <-
-            //ACA se rompe
             if neighboursToQueue.contains(target) then
               WikiResult.successful(Some(nodeDistance))
             else if nodeDistance >= maxDepth then WikiResult.successful(None)
