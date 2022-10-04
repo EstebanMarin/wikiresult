@@ -100,45 +100,38 @@ final class Wikigraph(client: Wikipedia):
         q: Queue[(Int, ArticleId)]
     ): WikiResult[Option[Int]] =
       def updateQueue(
+          current: (Int, ArticleId),
           qT: Queue[(Int, ArticleId)],
-          neighbours: Set[ArticleId]
-      ): Queue[(Int, ArticleId)] = ???
+          neighbours: Set[ArticleId],
+          visted: Set[ArticleId]
+      ): Queue[(Int, ArticleId)] =
+        def recursiveUpdate(
+            qT: Queue[(Int, ArticleId)],
+            neighbours: Set[ArticleId]
+        ): Queue[(Int, ArticleId)] =
+          if qT.isEmpty then qT
+          else if ??? then ???
+          else ???
+        recursiveUpdate(qT, neighbours)
+
       // if q.isEmpty || nodeDistance >= maxDepth then
       if q.isEmpty then WikiResult.successful(None)
       else
         val (current, queue) = q.dequeue
         val (nodeDistance, articleID) = current
-        val test =
-          for
-            neighboursToQueue: Set[ArticleId] <-
-              client.linksFrom(articleID)
-            test <-
-              if neighboursToQueue.contains(articleID) then
-                ???
-              else iter(visited ++ neighboursToQueue, updateQueue(queue, neighboursToQueue))
-          yield test
-        test
-
-      // else
-      //   val (current, queue) = q.dequeue
-      //   val (nodeDistance, articleID) = current
-      //   for
-      //     neighboursToQueue: Set[ArticleId] <-
-      //       client.linksFrom(articleID)
-      //     updatedVisted: Set[ArticleId] = visited + articleID
-      //     updatedQueue: Queue[(Int, ArticleId)] =
-      //       queue.enqueue(
-      //         neighboursToQueue
-      //           .map(id =>
-      //             // agregating nodes that are not visited
-      //             if updatedVisted.contains(id) then
-      //               (Int.MinValue, ArticleId(Int.MinValue))
-      //             else (nodeDistance + 1, id)
-      //           )
-      //           .filter(_._1 > 0)
-      //       )
-      //     iteration <- iter(updatedVisted, updatedQueue)
-      //   yield iteration
+        for
+          neighboursToQueue: Set[ArticleId] <-
+            client.linksFrom(articleID)
+          answer <-
+            if neighboursToQueue.contains(articleID) then
+              WikiResult.successful(Some(nodeDistance + 1))
+            else if nodeDistance >= maxDepth then WikiResult.successful(None)
+            else
+              iter(
+                visited ++ neighboursToQueue,
+                updateQueue(current, queue, neighboursToQueue, visited)
+              )
+        yield answer
     end iter
     if start == target then
       // The start node is the one we are looking for: the search succeeds with
